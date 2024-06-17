@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sublime-Semgrep Vulnerability Report</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="/static/css/style.css" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts - Classy font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@400;700&display=swap">
+    <style>
+        body {
+            font-family: 'Roboto Slab', serif; /* Apply the classy font to the body */
+        }
+        .container {
+            font-family: 'Roboto Slab', serif; /* Apply the classy font to the container */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5 mb-4 text-center">Sublime-Semgrep Vulnerability Report</h1>
+        
+        <!-- Vulnerability Breakdown Chart -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">Vulnerability Breakdown</h3>
+            </div>
+            <div class="card-body text-center">
+                <canvas id="vulnerabilityChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Reported Vulnerabilities -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3 class="card-title">Reported Vulnerabilities</h3>
+            </div>
+            <div class="card-body">
+                <ul class="list-group">
+                    {% for vuln in vulnerabilities|reverse %}
+                        <li class="list-group-item">
+                            <strong>Message:</strong> {{ vuln.message }} <br>
+                            <strong>File:</strong> {{ vuln.file_path }} <br>
+                            <strong>Line:</strong> {{ vuln.line }}<br>
+                            <strong>Severity:</strong> {{ vuln.severity }} <br>
+                            <strong>References:</strong>
+                            <ul>
+                                {% for ref in vuln.references %}
+                                    <li><a href="{{ ref }}" target="_blank">{{ ref }}</a></li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const vulnerabilities = {{ vulnerabilities | tojson }};
+            const severityCount = {
+                Low: 0,
+                Medium: 0,
+                High: 0,
+                Critical: 0
+            };
+
+            vulnerabilities.forEach(vuln => {
+                if (severityCount[vuln.severity] !== undefined) {
+                    severityCount[vuln.severity]++;
+                }
+            });
+
+            const ctx = document.getElementById('vulnerabilityChart').getContext('2d');
+            const vulnerabilityChart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(severityCount),
+                    datasets: [{
+                        data: Object.values(severityCount),
+                        backgroundColor: ['#4caf50', '#ff9800', '#f44336', '#9c27b0'],
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (tooltipItem) {
+                                    return `${tooltipItem.label}: ${tooltipItem.raw}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Adjust canvas size
+            document.getElementById('vulnerabilityChart').style.width = '300px';
+            document.getElementById('vulnerabilityChart').style.height = '300px';
+        });
+    </script>
+</body>
+</html>

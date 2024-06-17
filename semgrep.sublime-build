@@ -1,0 +1,4 @@
+{
+    "shell_cmd": "semgrep --json -f /home/l0xm1/Documents/BCA/major_project/semgrep-sublime/rules/semgrep_rules.yml $file",
+    "file_regex": "^(.*):(\\d+):(\\d+): (warning|error): (.*)$"
+}

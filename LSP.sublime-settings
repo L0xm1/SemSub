@@ -1,0 +1,15 @@
+ // Settings in here override those in "LSP/LSP.sublime-settings"
+{
+    "clients": {
+        "semgrep-lsp": {
+            "command": ["/home/l0xm1/.local/bin/semgrep"],
+            "scopes": ["source.python"],
+            "settings": {
+                "semgrep": {
+                    "configFile": "/home/l0xm1/Documents/BCA/major_project/semgrep-sublime/rules/semgrep_rules.yml"
+                }
+            }
+        }
+    }
+
+  }

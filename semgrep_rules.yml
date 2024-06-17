@@ -1,0 +1,300 @@
+rules:
+  - id: insecure-eval-use
+    message: Calling 'eval' with user input
+    languages: [python]
+    severity: WARNING
+    metadata:
+      severity: Medium
+    patterns:
+      - pattern: eval($VAR)
+      - pattern-not: eval("...")
+    fix: secure_eval($VAR)
+
+  - id: dangerous-template-string
+    message: >
+      Found a template created with string formatting.
+      This is susceptible to server-side template injection
+    languages: [python]
+    severity: WARNING
+    metadata:
+      severity: Medium
+      safe_function: render_template
+      vulnerable_function: render_template_string
+      references:
+        - https://portswigger.net/web-security/server-side-template-injection
+        - https://owasp.org/www-project-web-security-testing-guide/v41/4-Web_Application_Security_Testing/07-Input_Validation_Testing/18-Testing_for_Server_Side_Template_Injection
+    pattern-either:
+      - pattern: |
+          $V = "...".format(...)
+          ...
+          flask.render_template_string($V, ...)
+      - pattern: |
+          $V = "...".format(...)
+          ...
+          return flask.render_template_string($V, ...), $MORE
+      - pattern: |
+          $V = "..." % $S
+          ...
+          flask.render_template_string($V, ...)
+      - pattern: |
+          $V = "..." % $S
+          ...
+          return flask.render_template_string($V, ...), $MORE
+      - pattern: |
+          $V = "..."
+          ...
+          $V += $O
+          ...
+          flask.render_template_string($V, ...)
+      - pattern: |
+          $V = "..."
+          ...
+          $V += $O
+          ...
+          return flask.render_template_string($V, ...), $MORE
+      - pattern: |
+          $V = f"...{$X}..."
+          ...
+          flask.render_template_string($V, ...)
+      - pattern: |
+          $V = f"...{$X}..."
+          ...
+          return flask.render_template_string($V, ...), $CODE
+
+  - id: insecure-hash-algorithm-sha1
+    patterns: 
+      - pattern: cryptography.hazmat.primitives.hashes.$SHA(...)
+    message: >-
+      Detected SHA1 hash algorithm which is considered insecure. SHA1 is not
+      collision resistant and is therefore not suitable as a cryptographic
+      signature. Use SHA256 or SHA3 instead.
+    severity: WARNING
+    languages:
+      - python
+    metadata:
+      severity: High
+
+  - id: empty-aes-key
+    message: >-
+      Potential empty AES encryption key. Using an empty key in AES encryption
+      can result in weak encryption and may allow attackers to easily decrypt sensitive
+      data. Ensure that a strong, non-empty key is used for AES encryption.
+    patterns:
+      - pattern: AES.new("",...)
+    languages:
+      - python
+    severity: WARNING
+    metadata:
+      severity: High
+
+  - id: insecure-deserialization
+    message: >-
+      Detected the use of an insecure deserialization library in a Flask route. These libraries
+      are prone to code execution vulnerabilities. Ensure user data does not enter this function.
+      To fix this, try to avoid serializing whole objects. Consider instead using a serializer
+      such as JSON.
+    languages:
+      - python
+    severity: WARNING
+    patterns:
+      - pattern-inside: |
+          @app.route(...)
+          def $X(...):
+            ...
+      - pattern-not: $MODULE.$FUNC("...")
+      - pattern-not: $MODULE.$FUNC(open("...", ...))
+      - pattern-either:
+        - pattern: pickle.$FUNC(...)
+        - pattern: _pickle.$FUNC(...)
+        - pattern: cPickle.$FUNC(...)
+        - pattern: dill.$FUNC(...)
+        - pattern: shelve.$FUNC(...)
+        - pattern: yaml.load(...)
+    metadata:
+      severity: High
+      references: 
+      - https://cheatsheetseries.owasp.org/cheatsheets/Deserialization_Cheat_Sheet.html
+      - https://portswigger.net/web-security/deserialization
+
+
+  - id: jwt-python-none-alg
+    message: >-
+      Detected use of the 'none' algorithm in a JWT token.
+      The 'none' algorithm assumes the integrity of the token has already
+      been verified. This would allow a malicious actor to forge a JWT token
+      that will automatically be verified. Do not explicitly use the 'none'
+      algorithm. Instead, use an algorithm such as 'HS256'.
+    languages: [python]
+    severity: WARNING
+    pattern-either:
+      - pattern: |
+          jwt.encode(...,algorithm="none",...)
+      - pattern: |-
+          jwt.decode(...,algorithms=[...,"none",...],...)
+    metadata:
+      severity: High
+
+  - id: avoid_send_file_without_path_sanitization
+    patterns:
+      - pattern-inside: |
+          @app.route(...)
+          def $X(filename):
+            ...
+      - pattern: flask.send_file(filename, ...)
+    message: Detected a user-controlled `filename` that could flow to `flask.send_file()` function. This
+      could lead to an attacker reading arbitrary file from the system, leaking private information. Make
+      sure to properly sanitize filename or use `flask.send_from_directory`
+    languages: [python]
+    severity: WARNING
+    metadata:
+      severity: Medium
+
+  - id: path-traversal-open
+    languages:
+      - python
+    severity: WARNING
+    message: >-
+      Found request data in a call to 'open'. Ensure the request data is validated or sanitized, otherwise
+      it could result in path traversal attacks.
+    pattern-either:
+      - patterns:
+          - pattern: open(...)
+      - pattern: open(..., <... flask.request.$W.get(...) ...>, ...)
+      - pattern: open(..., <... flask.request.$W[...] ...>, ...)
+      - pattern: open(..., <... flask.request.$W(...) ...>, ...)
+      - pattern: open(..., <... flask.request.$W ...>, ...)
+    metadata:
+      severity: High
+
+  - id: ssrf-injection-urllib
+    message: >-
+      Data from request object is passed to a new server-side request. This could lead
+      to a server-side request forgery (SSRF), which could result in attackers gaining
+      access to private organization data. To mitigate, ensure that schemes and hosts
+      are validated against an allowlist, do not forward the response to the user, and
+      ensure proper authentication and transport-layer security in the proxied request.
+    languages: [python]
+    severity: WARNING
+    patterns:
+      - pattern-inside: |
+          def $FUNC(...):
+            ...
+      - pattern-either:
+        - pattern: urllib.request.urlopen(..., $S.format(..., request.$W.get(...), ...), ...)
+        - pattern: urllib.request.urlopen(..., $S % request.$W.get(...), ...)
+        - pattern: urllib.request.urlopen(..., f"...{request.$W.get(...)}...", ...)
+        - pattern: urllib.request.urlopen(..., request.$W.get(...), ...)
+        - pattern: |
+            $DATA = request.$W.get(...)
+            ...
+            urllib.request.urlopen(..., $DATA, ...)
+        - pattern: |
+            $DATA = request.$W.get(...)
+            ...
+            $INTERM = $DATA
+            ...
+            urllib.request.urlopen(..., $INTERM, ...)
+        - pattern: |
+            $DATA = request.$W.get(...)
+            ...
+            urllib.request.urlopen(..., $STR.format(..., $DATA, ...), ...)
+        - pattern: |
+            $DATA = request.$W.get(...)
+            ...
+            $INTERM = $STR.format(..., $DATA, ...)
+            ...
+            urllib.request.urlopen(..., $INTERM, ...)
+        - pattern: |
+            $DATA = request.$W.get(...)
+            ...
+            urllib.request.urlopen(..., $STR % $DATA, ...)
+        - pattern: |
+            $DATA = request.$W.get(...)
+            ...
+            $INTERM = $STR % $DATA
+            ...
+            urllib.request.urlopen(..., $INTERM, ...)
+        - pattern: |
+            $DATA = request.$W.get(...)
+            ...
+            urllib.request.urlopen(..., f"...{$DATA}...", ...)
+        - pattern: |
+            $DATA = request.$W.get(...)
+            ...
+            $INTERM = f"...{$DATA}..."
+            ...
+            urllib.request.urlopen(..., $INTERM, ...)
+        - pattern: |
+            $DATA = request.$W.get(...)
+            ...
+            urllib.request.urlopen(..., $STR + $DATA, ...)
+        - pattern: |
+            $DATA = request.$W.get(...)
+            ...
+            $INTERM = $STR + $DATA
+            ...
+            urllib.request.urlopen(..., $INTERM, ...)
+        - pattern: $A = urllib.request.urlopen(..., request.$W.get(...), ...)
+        - pattern: return urllib.request.urlopen(..., request.$W.get(...), ...)
+        - pattern: urllib.request.urlopen(..., $S.format(..., request.$W(...), ...), ...)
+        - pattern: urllib.request.urlopen(..., $S % request.$W(...), ...)
+        - pattern: urllib.request.urlopen(..., f"...{request.$W(...)}...", ...)
+        - pattern: urllib.request.urlopen(..., request.$W(...), ...)
+        - pattern: $A = urllib.request.urlopen(..., request.$W, ...)
+        - pattern: return urllib.request.urlopen(..., request.$W, ...)
+    metadata:
+      severity: High
+
+  - id: extract-user-data
+    mode: taint
+    pattern-sources:
+      - pattern-either:
+          - pattern: $_GET[...]
+          - pattern: $_FILES[...]
+          - pattern: $_POST[...]
+    pattern-sinks:
+      - pattern: extract(...)
+    pattern-sanitizers:
+      - pattern: extract($VAR, EXTR_SKIP,...)
+    message: Do not call 'extract()' on user-controllable data. If you must, then you must also provide
+      the EXTR_SKIP flag to prevent overwriting existing variables.
+    languages:
+      - php
+    severity: WARNING
+    metadata:
+      severity: Medium
+
+  - id: php-ssrf
+    patterns:
+      - pattern-either:
+          - pattern: |
+              $VAR=$DATA;
+              ...
+              $FUNCS(...,$VAR, ...);
+          - pattern: $FUNCS(...,$DATA, ...);
+      - metavariable-pattern:
+          metavariable: $DATA
+          patterns:
+            - pattern-either:
+                - pattern: $_GET
+                - pattern: $_POST
+                - pattern: $_COOKIE
+                - pattern: $_REQUEST
+      - metavariable-pattern:
+          metavariable: $FUNCS
+          patterns:
+            - pattern-either:
+                - pattern: curl_setopt
+                - pattern: fopen
+                - pattern: file_get_contents
+                - pattern: curl_init
+                - pattern: readfile
+    message: The web server receives a URL or similar request from an upstream
+      component and retrieves the contents of this URL, but it does not
+      sufficiently ensure that the request is being sent to the expected
+      destination. Dangerous function $FUNCS with payload $DATA
+    languages:
+      - php
+    severity: WARNING
+    metadata:
+      severity: High
