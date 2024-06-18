@@ -1,16 +1,154 @@
+/* General Body Styling */
 body {
-    background-color: #f8f9fa;
+    background-color: #1e1e2f; /* Dark background for a techy look */
+    color: #f8f9fa; /* Light text color for readability */
+    font-family: 'Roboto Slab', serif; /* Apply the classy font to the body */
+    margin: 0;
+    padding: 0;
 }
 
+.project-header {
+    display: flex;
+    align-items: center;
+}
+
+.project-header img {
+    width: 10px; /* Adjust the width of the icon as needed */
+    margin-right: 10px; /* Add some spacing between the icon and the title */
+}
+
+/* Container Styling */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Roboto Slab', serif; /* Apply the classy font to the container */
+}
+
+/* Card Styling */
 .card {
     margin-bottom: 20px;
+    border: 1px solid #2a2a3d; /* Dark gray border for subtle separation */
+    border-radius: 8px; /* Slightly rounded corners for a refined look */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* Deeper shadow for depth */
+    background-color: #2b2b40; /* Dark background for cards */
 }
 
+/* Card Header Styling */
 .card-header {
-    background-color: #343a40;
-    color: white;
+    background-color: #3b3b5c; /* Darker gray background for a classy look */
+    color: #f8f9fa; /* Light text for contrast */
+    padding: 15px 20px; /* Padding for spacing */
+    border-bottom: 1px solid #4b4b6c; /* Border to separate header */
+    border-top-left-radius: 8px; /* Matching card border radius */
+    border-top-right-radius: 8px; /* Matching card border radius */
 }
 
+/* Card Title Styling */
 .card-title {
     margin-bottom: 0;
+    font-size: 1.5rem; /* Slightly larger font size for titles */
+    font-weight: bold; /* Bold text for emphasis */
+    color: #00d1b2; /* Techy green for titles */
+}
+
+/* Card Body Styling */
+.card-body {
+    padding: 20px; /* Padding for spacing */
+    background-color: #2f2f4f; /* Darker background for a subtle contrast with the card */
+}
+
+/* Styling for lists within cards */
+.card-body ul {
+    padding-left: 20px; /* Indentation for list items */
+    margin: 0;
+}
+
+.card-body li {
+    margin-bottom: 10px; /* Space between list items */
+    color: #cfcfe6; /* Light gray for list items */
+}
+
+/* Links within card body */
+.card-body a {
+    color: #00d1b2; /* Techy green for links */
+    text-decoration: none; /* Remove underline */
+}
+
+.card-body a:hover {
+    text-decoration: underline; /* Underline on hover */
+}
+
+/* Headings */
+h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    color: #00d1b2; /* Techy green for the main heading */
+    text-align: center;
+}
+
+h2 {
+    font-size: 2rem;
+    margin-bottom: 15px;
+    color: #f8f9fa; /* Light color for secondary headings */
+}
+
+/* Custom Button Styling */
+.btn-custom {
+    background-color: #00d1b2; /* Techy green for buttons */
+    color: #1e1e2f; /* Dark text color for contrast */
+    border: none;
+    padding: 10px 20px;
+    font-size: 1rem;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.btn-custom:hover {
+    background-color: #00bfa0; /* Slightly darker green on hover */
+}
+
+/* Input Field Styling */
+input[type="text"], input[type="number"], textarea {
+    background-color: #2f2f4f; /* Darker background for input fields */
+    color: #f8f9fa; /* Light text color */
+    border: 1px solid #4b4b6c; /* Dark gray border */
+    padding: 10px;
+    border-radius: 5px;
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 15px;
+}
+
+/* Navbar Styling */
+.navbar {
+    background-color: #2b2b40; /* Dark background for navbar */
+    padding: 15px;
+}
+
+.navbar a {
+    color: #f8f9fa; /* Light text color for links */
+    text-decoration: none;
+    padding: 5px 10px;
+}
+
+.navbar a:hover {
+    color: #00d1b2; /* Techy green on hover */
+}
+
+/* Specific Styling for Message, Line, and Severity */
+.list-group-item strong {
+    color: #00d1b2; /* Techy green for labels */
+}
+
+.list-group-item {
+    background-color: #3b3b5c; /* Dark background for list items */
+    border: none; /* Remove border for list items */
+    margin-bottom: 10px; /* Space between list items */
+    padding: 15px;
+}
+
+.list-group-item p {
+    margin: 0;
+    color: #cfcfe6; /* Light gray for text */
 }

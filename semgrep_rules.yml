@@ -73,6 +73,9 @@ rules:
       - python
     metadata:
       severity: High
+      references:
+        - https://en.wikipedia.org/wiki/SHA-1
+        - https://learn.snyk.io/lesson/insecure-hash/
 
   - id: empty-aes-key
     message: >-
@@ -86,6 +89,9 @@ rules:
     severity: WARNING
     metadata:
       severity: High
+      references: 
+        - https://cwe.mitre.org/data/definitions/327.html
+        - https://cwe.mitre.org/data/definitions/310.html
 
   - id: insecure-deserialization
     message: >-
@@ -133,6 +139,10 @@ rules:
           jwt.decode(...,algorithms=[...,"none",...],...)
     metadata:
       severity: High
+      references: 
+        - https://book.hacktricks.xyz/pentesting-web/hacking-jwt-json-web-tokens
+        - https://www.akto.io/blog/jwt-none-algorithm-test
+
 
   - id: avoid_send_file_without_path_sanitization
     patterns:
@@ -148,6 +158,9 @@ rules:
     severity: WARNING
     metadata:
       severity: Medium
+      references: 
+        - https://github.com/jaygarza1982/ytdl-sync/issues/1
+        - https://owasp.org/www-community/attacks/Path_Traversal
 
   - id: path-traversal-open
     languages:
@@ -165,6 +178,9 @@ rules:
       - pattern: open(..., <... flask.request.$W ...>, ...)
     metadata:
       severity: High
+      references: 
+        - https://owasp.org/www-community/attacks/Path_Traversal
+        - https://cwe.mitre.org/data/definitions/22.html
 
   - id: ssrf-injection-urllib
     message: >-
@@ -244,6 +260,9 @@ rules:
         - pattern: return urllib.request.urlopen(..., request.$W, ...)
     metadata:
       severity: High
+      references:
+        - https://www.blackhat.com/docs/us-17/thursday/us-17-Tsai-A-New-Era-Of-SSRF-Exploiting-URL-Parser-In-Trending-Programming-Languages.pdf
+        - https://cwe.mitre.org/data/definitions/918.html
 
   - id: extract-user-data
     mode: taint
@@ -263,6 +282,10 @@ rules:
     severity: WARNING
     metadata:
       severity: Medium
+      references:  
+        - https://technicalnavigator.in/php-extract-bug/
+        - https://cwe.mitre.org/data/definitions/621.html
+
 
   - id: php-ssrf
     patterns:
@@ -298,3 +321,10 @@ rules:
     severity: WARNING
     metadata:
       severity: High
+      references:
+        - https://book.hacktricks.xyz/network-services-pentesting/pentesting-web/php-tricks-esp/php-ssrf
+        - https://www.vaadata.com/blog/understanding-web-vulnerability-server-side-request-forgery-1/
+        - https://www.cnblogs.com/l0nmar/p/12821426.html
+
+
+
